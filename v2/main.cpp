@@ -49,7 +49,7 @@ void drawSquares(SDL_Event *event) {
             SDL_RenderFillRect(renderer, &squares[i]);
             // TODO
             // This should be optimized:
-            // A new popup object should only be created once for a focused box.
+            // A new popup object should only be created once for a focused square.
             if (popup) delete popup;
             popup = new Popup(renderer, &squares[i], i+1);
             isFocused = true;
