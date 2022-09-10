@@ -9,14 +9,15 @@
 
 SDL_Window *window = nullptr;
 SDL_Renderer *renderer = nullptr;
-Popup *popup = nullptr;
+Popup popup;
 std::vector<SDL_Rect> squares;
+bool showPopup = false;
 
 void initialize() {
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
     // Uint32 windowFlags = SDL_WINDOW_FULLSCREEN_DESKTOP;
-    SDL_CreateWindowAndRenderer(windowWidth, windowHeight, /*windowFlags*/ 0, &window, &renderer);
+    SDL_CreateWindowAndRenderer(config::windowWidth, config::windowHeight, /*windowFlags*/ 0, &window, &renderer);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
@@ -33,7 +34,7 @@ void cleanup() {
 bool isSquareFocused(SDL_Rect* square) {
     int x, y;
     SDL_GetMouseState(&x, &y);
-    SDL_SetRenderDrawColor(renderer, green.r, green.g, green.b, green.a);
+    SDL_SetRenderDrawColor(renderer, config::green.r, config::green.g, config::green.b, config::green.a);
     if ((x > square->x && x < square->x+square->w) && (y > square->y && y < square->y+square->h)) {
         return true;
     } else {
@@ -42,29 +43,19 @@ bool isSquareFocused(SDL_Rect* square) {
 }
 
 void drawSquares(SDL_Event *event) {
-    SDL_SetRenderDrawColor(renderer, green.r, green.g, green.b, green.a);
-    bool isFocused = false;
+    SDL_SetRenderDrawColor(renderer, config::green.r, config::green.g, config::green.b, config::green.a);
+    showPopup = false;
     for (int i = 0; i < squares.size(); i++) {
         if (isSquareFocused(&squares[i])) {
             SDL_RenderFillRect(renderer, &squares[i]);
-            // TODO
-            // This should be optimized:
-            // A new popup object should only be created once for a focused square.
-            if (popup) delete popup;
-            popup = new Popup(renderer, &squares[i], i+1);
-            isFocused = true;
+            // The popup object should only be updated once for a focused square.
+            if (popup.getSquareNumber() != i) {
+                popup.update(&squares[i], i);
+            }
+            showPopup = true;
         } else {
             SDL_RenderDrawRect(renderer, &squares[i]);
         }
-    }
-    if (!isFocused && popup) {
-        // FIXME 
-        // popup has to be removed from memory (delete popup;).
-        // But deleting popup via 'delete' causes the program to crash.
-        // The reason may be that popup is accessed even after it has been removed.
-        // By assigning popup a null pointer - makes it work but might cause a memory leakage.
-        // This needs further investigation.
-        popup = nullptr;
     }
 }
 
@@ -75,8 +66,8 @@ void createSquares() {
     int squareSize = 160;
     int mainColumnsCount = 6;
     int rowsCount = 4;
-    int baseX = (windowWidth - (squareSize*mainColumnsCount)) / 2;
-    int baseY = (windowHeight - (squareSize*rowsCount)) / 2;
+    int baseX = (config::windowWidth - (squareSize*mainColumnsCount)) / 2;
+    int baseY = (config::windowHeight - (squareSize*rowsCount)) / 2;
 
     // Count of squares on the Y axis on a main column
     int yCount = 4;
@@ -112,13 +103,14 @@ void createSquares() {
 int main() {
     initialize();
     createSquares();
+    popup = Popup(renderer);
 
     SDL_Event event;
     while(event.type != SDL_QUIT) {
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
         SDL_RenderClear(renderer);
         drawSquares(&event);
-        if (popup) popup->draw();
+        if (showPopup) popup.draw();
         SDL_RenderPresent(renderer);
         SDL_PollEvent(&event);
     }
