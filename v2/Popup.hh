@@ -3,17 +3,22 @@
 class Popup {
     
     public:
-        Popup(SDL_Renderer* renderer, SDL_Rect* square, int boxNumber) {
+        Popup() {}
+
+        Popup(SDL_Renderer* renderer) {
             this->renderer = renderer;
-            this->square = square;
-            this->boxNumber = boxNumber;
-            calculatePosition();
-            createTitle();
         }
 
         ~Popup() {
             SDL_FreeSurface(titleSurface);
             SDL_DestroyTexture(titleTexture);
+        }
+
+        void update(SDL_Rect* square, int squareNumber) {
+            this->square = square;
+            this->squareNumber = squareNumber;
+            calculatePosition();
+            createTitle();
         }
 
         void draw() {
@@ -22,10 +27,14 @@ class Popup {
             drawTitle();
         }
 
+        int getSquareNumber() {
+            return squareNumber;
+        }
+
     private:
         int x;
         int y;
-        int boxNumber;
+        int squareNumber;
         int width = 150;
         int height = 200;
         SDL_Renderer* renderer;
@@ -36,15 +45,14 @@ class Popup {
         SDL_Rect titleRect;
         SDL_Rect backgroundRect;
         SDL_Rect frameRect;
-        SDL_Color white = {255, 255, 255};
-        
+                
         void calculatePosition() {
             int offset = 20;
             int x, y;
             
-            auto isXRightOffset = [](Popup *popup, int offset) { return (popup->square->x+popup->square->w+popup->width+offset) > windowWidth; };
+            auto isXRightOffset = [](Popup *popup, int offset) { return (popup->square->x+popup->square->w+popup->width+offset) > config::windowWidth; };
             auto isXLeftOffset = [](Popup *popup, int offset) { return (popup->square->x-(popup->width+offset)) < 0; };
-            auto isYBottomOffset = [](Popup *popup, int offset) { return (popup->square->y+popup->square->h+popup->height/2) > windowHeight; };
+            auto isYBottomOffset = [](Popup *popup, int offset) { return (popup->square->y+popup->square->h+popup->height/2) > config::windowHeight; };
             auto isYTopOffset = [](Popup *popup, int offset) { return (popup->square->y-(popup->height/2)) < 0; };
             
             // Check upper right corner
@@ -123,8 +131,8 @@ class Popup {
         void createTitle() {
             int textOffset = 10;
             TTF_Font* font = TTF_OpenFont("8bit.ttf", 16);
-            std::string text =  "Box: " + std::to_string(boxNumber);
-            titleSurface = TTF_RenderText_Solid(font, text.c_str(), white);
+            std::string text =  "Box: " + std::to_string(squareNumber+1);
+            titleSurface = TTF_RenderText_Solid(font, text.c_str(), config::white);
             titleTexture = SDL_CreateTextureFromSurface(renderer, titleSurface);
             titleRect.x = x+textOffset;
             titleRect.y = y;
