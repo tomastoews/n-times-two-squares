@@ -10,7 +10,6 @@ class Popup {
         }
 
         ~Popup() {
-            SDL_FreeSurface(titleSurface);
             SDL_DestroyTexture(titleTexture);
         }
 
@@ -40,7 +39,6 @@ class Popup {
         SDL_Renderer* renderer;
         SDL_Rect* square;
 
-        SDL_Surface* titleSurface;
         SDL_Texture* titleTexture;
         SDL_Rect titleRect;
         SDL_Rect backgroundRect;
@@ -132,12 +130,13 @@ class Popup {
             int textOffset = 10;
             TTF_Font* font = TTF_OpenFont("8bit.ttf", 16);
             std::string text =  "Box: " + std::to_string(squareNumber+1);
-            titleSurface = TTF_RenderText_Solid(font, text.c_str(), config::white);
+            SDL_Surface* titleSurface = TTF_RenderText_Blended(font, text.c_str(), config::white);
             titleTexture = SDL_CreateTextureFromSurface(renderer, titleSurface);
             titleRect.x = x+textOffset;
             titleRect.y = y;
             titleRect.w = width-(textOffset*2);
             titleRect.h = 40;
+            SDL_FreeSurface(titleSurface);
             TTF_CloseFont(font);
         }
 
