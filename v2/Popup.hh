@@ -1,3 +1,4 @@
+#include <string>
 #include "config.hh"
 
 class Popup {
@@ -43,7 +44,7 @@ class Popup {
         SDL_Rect titleRect;
         SDL_Rect backgroundRect;
         SDL_Rect frameRect;
-                
+        
         void calculatePosition() {
             int offset = 20;
             int x, y;
