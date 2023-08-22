@@ -1,4 +1,4 @@
-# n*2 Spuares
+# n*2 Squares
 Built with C++ and SDL2.
 
 ## Version 1
